@@ -10,62 +10,74 @@
 				}
 			}
 			
+			function toDegree(radian)
+			{
+				var pi = Math.PI;
+				return radian * (180/pi);
+			}
+			
 			function loadCanvas(){
 				/*
-					loadCanvas is called onLoad of this html. It creates a dummy image of Blue colour and rotates it and displays the both original and rotated image on the canvas.
+					loadCanvas is called onLoad of this html. It creates a dummy image of Blue colour and rotates it and displays both original and rotated image on the canvas.
 					Inputs :
 						NA
 					Output :
 						NA
 						
 				*/
-				
-				//let imageData = getImage(200,10);
-				//let imageData = getImage(400,20);
-				let imageData = getImage(40000, 200);
-				//let imageData = getImage(16000000, 2000);
-				setImage(imageData, 20, 20);
-				
-				
-				var startTime;
-				var endTime;
+				try {
+					//let imageData = getImage(200,10);
+					//let imageData = getImage(400,20);
+					let imageData = getImage(40000, 100);
+					//let imageData = getImage(16000000, 2000);
+					setImage(imageData, 20, 20, "Original Image");
+					
+					
+					var startTime;
+					var endTime;
 
-				startTime = performance.now();
+					startTime = performance.now();
 
-				//let rotatedImage = rotateImage(imageData, Math.PI); //180
-				let rotatedImage = rotateImage(imageData, Math.PI/2); // 90
-				// let rotatedImage = rotateImage(imageData, Math.PI/4); // 45
-				//let rotatedImage = rotateImage(imageData, Math.PI/6); // 30
+					// var angle = Math.PI; 	//180
+					var angle = Math.PI/2; 		//90
+					// var angle = Math.PI/4;	//45
+					// var angle = Math.PI/6;	//30
+					
+					let rotatedImage = rotateImage(imageData, angle); 
 
-				endTime = performance.now();
-				
-				console.debug("Time taken to rotate image : " + (endTime - startTime) + " ms.");
-				
-				//let rotatedImage = rotateImage(imageData, 45) ; // 45
-				//let rotatedImage = rotateImage(imageData, 90) ; // 45
-				//let rotatedImage = rotateImage(imageData, 30) ; // 45
-				
-				startTime = performance.now();
-				setImage(rotatedImage, 20, 40 + imageData.height);
-				endTime = performance.now();
-				
-				console.debug("Time taken to render image : " + (endTime - startTime) + " ms.");
-				
+					endTime = performance.now();
+					
+					console.debug("Time taken to rotate image : " + (endTime - startTime) + " ms.");
+					
+					startTime = performance.now();
+					setImage(rotatedImage, 20, 60 + imageData.height, "Rotated Image by "+ parseInt(toDegree(angle)) + " degrees");
+					endTime = performance.now();
+					
+					console.debug("Time taken to render image : " + (endTime - startTime) + " ms.");
+				}
+				catch(e){
+					console.log("Error in loadCanvas : "+e);
+				}
 			}
 			
 			function writeToCSV(csvContent, filename){
-				var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-				
-				var link = document.createElement("a");
-				if (link.download !== undefined) { // feature detection
-					// Browsers that support HTML5 download attribute
-					var url = URL.createObjectURL(blob);
-					link.setAttribute("href", url);
-					link.setAttribute("download", filename );
-					link.style.visibility = 'hidden';
-					document.body.appendChild(link);
-					link.click();
-					document.body.removeChild(link);
+				try {
+					var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+					
+					var link = document.createElement("a");
+					if (link.download !== undefined) { // feature detection
+						// Browsers that support HTML5 download attribute
+						var url = URL.createObjectURL(blob);
+						link.setAttribute("href", url);
+						link.setAttribute("download", filename );
+						link.style.visibility = 'hidden';
+						document.body.appendChild(link);
+						link.click();
+						document.body.removeChild(link);
+					}
+				}
+				catch(e){
+					console.log("Error in writeToCSV : "+e);
 				}
 			}
 			
@@ -79,28 +91,33 @@
 						ImageData object
 						
 				*/
-				const arr = new Uint8ClampedArray(size);
+				try {
+					const arr = new Uint8ClampedArray(size);
 
-				var startBValue = 190;
+					var startBValue = 190;
 
-				// Iterate through every pixel
-				for (let i = 0; i < arr.length; i += 4) {
-				
-				  arr[i + 0] = 0;	// R value
-				  arr[i + 1] = 0;  // G value
-				  arr[i + 2] = startBValue;	// B value
-				  arr[i + 3] = 255;  // A value
-				  
-				 startBValue = ( startBValue <= 0 ) ? 190 : startBValue - 1 ; 
-				 
+					// Iterate through every pixel
+					for (let i = 0; i < arr.length; i += 4) {
+					
+					  arr[i + 0] = 0;	// R value
+					  arr[i + 1] = 0;  // G value
+					  arr[i + 2] = startBValue;	// B value
+					  arr[i + 3] = 255;  // A value
+					  
+					 startBValue = ( startBValue <= 0 ) ? 190 : startBValue - 1 ; 
+					 
+					}
+
+					// Initialize a new ImageData object
+					let imageData = new ImageData(arr, width);
+					return imageData;
 				}
-
-				// Initialize a new ImageData object
-				let imageData = new ImageData(arr, width);
-				return imageData;
+				catch(e){
+					console.log("Error in getImage : "+e);
+				}
 			}
 			
-			function setImage(imageData, xOffset, yOffset){
+			function setImage(imageData, xOffset, yOffset, message){
 				/*
 					setImage draws image on to the canvas
 					Inputs :
@@ -110,10 +127,15 @@
 					Output :
 						NA
 				*/
-				const canvas = document.getElementById('canvas');
-				const ctx = canvas.getContext('2d');
-				
-				ctx.putImageData(imageData, xOffset, yOffset);
+				try {
+					const canvas = document.getElementById('canvas');
+					const ctx = canvas.getContext('2d');
+					ctx.fillText(message, xOffset, yOffset - 5);
+					ctx.putImageData(imageData, xOffset, yOffset);
+				}
+				catch(e){
+					console.log("Error in setImage : "+e);
+				}
 			}
 			
 			function getMatrixFromArray(objData, nCol){
@@ -126,17 +148,22 @@
 					Output :
 						matrixData : Object containing the RGBA values in matrix format
 				*/
-				var intLimit = objData["R"].length;
-				var matrixData = { "R":[], "G":[],"B":[],"A":[] };
-				var counter = 0;
-				for(var intIter = 0; intIter < intLimit; intIter += nCol)
-				{
-					matrixData["R"].push(objData["R"].slice(intIter, intIter + nCol));
-					matrixData["G"].push(objData["G"].slice(intIter, intIter + nCol));
-					matrixData["B"].push(objData["B"].slice(intIter, intIter + nCol));
-					matrixData["A"].push(objData["A"].slice(intIter, intIter + nCol));
+				try {
+					var intLimit = objData["R"].length;
+					var matrixData = { "R":[], "G":[],"B":[],"A":[] };
+					var counter = 0;
+					for(var intIter = 0; intIter < intLimit; intIter += nCol)
+					{
+						matrixData["R"].push(objData["R"].slice(intIter, intIter + nCol));
+						matrixData["G"].push(objData["G"].slice(intIter, intIter + nCol));
+						matrixData["B"].push(objData["B"].slice(intIter, intIter + nCol));
+						matrixData["A"].push(objData["A"].slice(intIter, intIter + nCol));
+					}
+					return matrixData;
 				}
-				return matrixData;
+				catch(e){
+					console.log("Error in getMatrixFromArray : "+e);
+				}
 			}
 			
 			function getArrayFromMatrix(matrixData){
@@ -148,22 +175,27 @@
 						objData : Object containing individual arrays of RGBA values
 				*/
 			
-				var hashLength = {};
-				
-				var objData = { "R":[], "G":[],"B":[],"A":[] };
-				
-			    for(var i=0; i<matrixData["R"].length; i++){
+				try {
+					var hashLength = {};
 					
-					for(var j=0; j<matrixData["R"][i].length; j++){
+					var objData = { "R":[], "G":[],"B":[],"A":[] };
 					
-						objData["R"].push(matrixData["R"][i][j]);
-						objData["G"].push(matrixData["G"][i][j]);
-						objData["B"].push(matrixData["B"][i][j]);
-						objData["A"].push(matrixData["A"][i][j]);
+					for(var i=0; i<matrixData["R"].length; i++){
+						
+						for(var j=0; j<matrixData["R"][i].length; j++){
+						
+							objData["R"].push(matrixData["R"][i][j]);
+							objData["G"].push(matrixData["G"][i][j]);
+							objData["B"].push(matrixData["B"][i][j]);
+							objData["A"].push(matrixData["A"][i][j]);
+						}
+						
 					}
-					
+					return objData;
 				}
-				return objData;
+				catch(e){
+					console.log("Error in getArrayFromMatrix : "+e);
+				}
 			}
 
 			function rotateImage(imageData, angle){
@@ -175,128 +207,131 @@
 					Output :
 						outputImageData : ImageData object of the output
 				*/
-			
-				var intIter = 0;
-				var intLimit = imageData.data.length;
-				
-				var startTime;
-				var endTime;
-				
-				var objData = { "R":[], "G":[],"B":[],"A":[] };
-				
-				for(intIter = 0; intIter < intLimit; intIter += 4 ){
-					objData["R"].push( imageData.data[intIter + 0] );
-					objData["G"].push( imageData.data[intIter + 1] );
-					objData["B"].push( imageData.data[intIter + 2] );
-					objData["A"].push( imageData.data[intIter + 3] );
-				}
-				
-				var center = new Point(imageData.width/2, imageData.height/2);
-				
-				/* Rotate the four corners of the original image to get the dimension of the output image. */
-				topLeft = rotateAPoint(new Point(0, 0), center, angle);
-				topRight = rotateAPoint(new Point(imageData.width - 1, 0), center, angle);
-				bottomLeft = rotateAPoint(new Point(0, imageData.height - 1), center, angle);
-				bottomRight = rotateAPoint(new Point(imageData.width - 1, imageData.height - 1), center, angle);
-				
-				/* xMin and yMin corresponds to the value the output image needs to shift to keep values in 1st quadrant i.e. to handle ArrayIndexOutOfBoundsException. */
-				var xMin = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-				var yMin = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-				var xMax = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-				var yMax = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-
-
-				/* xLimit and yLimit corresponds to width and height of the output image */
-				var xLimit = xMax - xMin + 1;	  
-				var yLimit = yMax - yMin + 1;
-				
-				/* create container for the output image and update all pixels with 0 */
-				var updatedMatrix = {"R":[],"G":[],"B":[],"A":[]};
-				for(var itrY=0; itrY < yLimit; itrY++){
-					updatedMatrix["R"][itrY] = [];
-					updatedMatrix["G"][itrY] = [];
-					updatedMatrix["B"][itrY] = [];
-					updatedMatrix["A"][itrY] = [];
+				try {
+					var intIter = 0;
+					var intLimit = imageData.data.length;
 					
-					for(var itrX=0; itrX < xLimit; itrX++){
-						updatedMatrix["R"][itrY].push(0);
-						updatedMatrix["G"][itrY].push(0);
-						updatedMatrix["B"][itrY].push(0);
-						updatedMatrix["A"][itrY].push(0);
-					}
-				}
-				startTime = performance.now();
-				
-				var objMatrix = getMatrixFromArray(objData, imageData.width);
-				
-				endTime = performance.now();
-				
-				console.debug("Time taken for 'getMatrixFromArray' : " + (endTime - startTime) + " ms.");
-				
-				var rMatrix = objMatrix["R"];
-				var gMatrix = objMatrix["G"];
-				var bMatrix = objMatrix["B"];
-				var aMatrix = objMatrix["A"];
-				
-				startTime = performance.now();
-				
-				/* Rotate each point in original image and update the container with RGBA value */
-				for(var itrY=0; itrY < rMatrix.length; itrY++){
-					for(var itrX=0; itrX < rMatrix[itrY].length; itrX++){
-						var pointObject = rotateAPoint(new Point(itrX , itrY), center, angle);
-
-						/* Handle the new point w.r.t the offset */
-						var xpoint = pointObject.x - xMin;
-						var ypoint = pointObject.y - yMin;
-
-						updatedMatrix["R"][ypoint][xpoint] = rMatrix[itrY][itrX];
-						updatedMatrix["G"][ypoint][xpoint] = gMatrix[itrY][itrX];
-						updatedMatrix["B"][ypoint][xpoint] = bMatrix[itrY][itrX];
-						updatedMatrix["A"][ypoint][xpoint] = aMatrix[itrY][itrX];
-					}
-				}
-				
-				endTime = performance.now();
-				console.debug("Time taken for 'rotation' : " + (endTime - startTime) + " ms.");
-				
-				startTime = performance.now();
-
-				var objArrData = getArrayFromMatrix(updatedMatrix);
-				
-				var rArray = objArrData["R"];
-				var gArray = objArrData["G"];
-				var bArray = objArrData["B"];
-				var aArray = objArrData["A"];
-				
-				endTime = performance.now();
-				
-				console.debug("Time taken for 'getArrayFromMatrix' : " + (endTime - startTime) + " ms.");
-				
-				startTime = performance.now();
-				
-				/* Create ImageData object from the RGBA array */
-				var counter = 0;
-				var newArraySize = rArray.length * 4;
-				var outputArray = new Uint8ClampedArray(newArraySize);
-				for(var itrX=0; itrX < newArraySize; itrX+= 4){
-					outputArray[itrX + 0] = parseInt(rArray[counter]);	// R value
-					outputArray[itrX + 1] = parseInt(gArray[counter]);  // G value
-					outputArray[itrX + 2] = parseInt(bArray[counter]);	// B value
-					outputArray[itrX + 3] = parseInt(aArray[counter]);  // A value
+					var startTime;
+					var endTime;
 					
-					counter++;
-				}
-				
-				endTime = performance.now();
-				
-				console.debug("Time taken for 'outputArray' : " + (endTime - startTime) + " ms.");
+					var objData = { "R":[], "G":[],"B":[],"A":[] };
+					
+					for(intIter = 0; intIter < intLimit; intIter += 4 ){
+						objData["R"].push( imageData.data[intIter + 0] );
+						objData["G"].push( imageData.data[intIter + 1] );
+						objData["B"].push( imageData.data[intIter + 2] );
+						objData["A"].push( imageData.data[intIter + 3] );
+					}
+					
+					var center = new Point(imageData.width/2, imageData.height/2);
+					
+					/* Rotate the four corners of the original image to get the dimension of the output image. */
+					topLeft = rotateAPoint(new Point(0, 0), center, angle);
+					topRight = rotateAPoint(new Point(imageData.width - 1, 0), center, angle);
+					bottomLeft = rotateAPoint(new Point(0, imageData.height - 1), center, angle);
+					bottomRight = rotateAPoint(new Point(imageData.width - 1, imageData.height - 1), center, angle);
+					
+					/* xMin and yMin corresponds to the value the output image needs to shift to keep values in 1st quadrant i.e. to handle ArrayIndexOutOfBoundsException. */
+					var xMin = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+					var yMin = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+					var xMax = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+					var yMax = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
 
-				var outputImageData = new ImageData(outputArray, updatedMatrix["R"][0].length);
-				return outputImageData;
+
+					/* xLimit and yLimit corresponds to width and height of the output image */
+					var xLimit = xMax - xMin + 1;	  
+					var yLimit = yMax - yMin + 1;
+					
+					/* create container for the output image and update all pixels with 0 */
+					var updatedMatrix = {"R":[],"G":[],"B":[],"A":[]};
+					for(var itrY=0; itrY < yLimit; itrY++){
+						updatedMatrix["R"][itrY] = [];
+						updatedMatrix["G"][itrY] = [];
+						updatedMatrix["B"][itrY] = [];
+						updatedMatrix["A"][itrY] = [];
+						
+						for(var itrX=0; itrX < xLimit; itrX++){
+							updatedMatrix["R"][itrY].push(0);
+							updatedMatrix["G"][itrY].push(0);
+							updatedMatrix["B"][itrY].push(0);
+							updatedMatrix["A"][itrY].push(0);
+						}
+					}
+					startTime = performance.now();
+					
+					var objMatrix = getMatrixFromArray(objData, imageData.width);
+					
+					endTime = performance.now();
+					
+					console.debug("Time taken for 'getMatrixFromArray' : " + (endTime - startTime) + " ms.");
+					
+					var rMatrix = objMatrix["R"];
+					var gMatrix = objMatrix["G"];
+					var bMatrix = objMatrix["B"];
+					var aMatrix = objMatrix["A"];
+					
+					startTime = performance.now();
+					
+					/* Rotate each point in original image and update the container with RGBA value */
+					for(var itrY=0; itrY < rMatrix.length; itrY++){
+						for(var itrX=0; itrX < rMatrix[itrY].length; itrX++){
+							var pointObject = rotateAPoint(new Point(itrX , itrY), center, angle);
+
+							/* Handle the new point w.r.t the offset */
+							var xpoint = pointObject.x - xMin;
+							var ypoint = pointObject.y - yMin;
+
+							updatedMatrix["R"][ypoint][xpoint] = rMatrix[itrY][itrX];
+							updatedMatrix["G"][ypoint][xpoint] = gMatrix[itrY][itrX];
+							updatedMatrix["B"][ypoint][xpoint] = bMatrix[itrY][itrX];
+							updatedMatrix["A"][ypoint][xpoint] = aMatrix[itrY][itrX];
+						}
+					}
+					
+					endTime = performance.now();
+					console.debug("Time taken for 'rotation' : " + (endTime - startTime) + " ms.");
+					
+					startTime = performance.now();
+
+					var objArrData = getArrayFromMatrix(updatedMatrix);
+					
+					var rArray = objArrData["R"];
+					var gArray = objArrData["G"];
+					var bArray = objArrData["B"];
+					var aArray = objArrData["A"];
+					
+					endTime = performance.now();
+					
+					console.debug("Time taken for 'getArrayFromMatrix' : " + (endTime - startTime) + " ms.");
+					
+					startTime = performance.now();
+					
+					/* Create ImageData object from the RGBA array */
+					var counter = 0;
+					var newArraySize = rArray.length * 4;
+					var outputArray = new Uint8ClampedArray(newArraySize);
+					for(var itrX=0; itrX < newArraySize; itrX+= 4){
+						outputArray[itrX + 0] = parseInt(rArray[counter]);	// R value
+						outputArray[itrX + 1] = parseInt(gArray[counter]);  // G value
+						outputArray[itrX + 2] = parseInt(bArray[counter]);	// B value
+						outputArray[itrX + 3] = parseInt(aArray[counter]);  // A value
+						
+						counter++;
+					}
+					
+					endTime = performance.now();
+					
+					console.debug("Time taken for 'outputArray' : " + (endTime - startTime) + " ms.");
+
+					var outputImageData = new ImageData(outputArray, updatedMatrix["R"][0].length);
+					return outputImageData;
+				}
+				catch(e){
+					console.log("Error in rotateImage : "+e);
+				}
 			}
 
 			function rotateAPoint(point, center, angle) {
-				
 				/*
 					rotateAPoint rotates a single point w.r.t. a central pivot point
 					Inputs :
@@ -306,11 +341,15 @@
 					Output :
 						rotatedPoint : Updated point after rotation that contains (x,y) coordinates
 				*/
-				
-				var x = Math.round(center.x + ((point.x - center.x) * Math.cos(angle) - (point.y - center.y) * Math.sin(angle)));
-				var y = Math.round(center.y + ((point.x - center.x) * Math.sin(angle) + (point.y - center.y) * Math.cos(angle))); 
-				var rotatedPoint = new Point(x, y);
-				return rotatedPoint;
+				try {
+					var x = Math.round(center.x + ((point.x - center.x) * Math.cos(angle) - (point.y - center.y) * Math.sin(angle)));
+					var y = Math.round(center.y + ((point.x - center.x) * Math.sin(angle) + (point.y - center.y) * Math.cos(angle))); 
+					var rotatedPoint = new Point(x, y);
+					return rotatedPoint;
+				}
+				catch(e){
+					console.log("Error in rotateAPoint : "+e);
+				}
 			}
 		</script>
 	</head>
